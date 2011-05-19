@@ -50,7 +50,9 @@ pretty_print()
 
   echo "<html><head></head>"
   echo "<body><pre>"
-  git show "$hash" | awk '{ ++line; printf("%5d: %s\n", line, $0); }'
+  git show "$hash" \
+    | sed 's#<#\&lt;#g; s#>#\&gt;#g; ' \
+    | gawk '{ ++line; printf("%5d: %s\n", line, $0); }'
   echo "</pre></body></html>"
 }
 
@@ -131,7 +133,8 @@ do
 
     echo "Commit $commit ($c/$ccount): processing."
 
-    metadata=$(git log -n 1 --pretty=raw $commit)
+    metadata=$(git log -n 1 --pretty=raw $commit \
+        | sed 's#<#\&lt;#g; s#>#\&gt;#g; ')
     parent=$(echo "$metadata" \
 	| awk '/^parent / { $1=""; sub (" ", ""); print $0 }')
     committer=$(echo "$metadata" \
@@ -146,13 +149,14 @@ do
       # This commit is the current head of the branch.
       ln -sf "../commits/$commit" "$TARGET/branches/$branch"
 
-      echo "<html><head><title>Branch: $branch</title></head>" \
+      echo "<html><head><title>$PROJECT: Branch $branch</title></head>" \
           "<body>" \
+          "<h1><a href=\"../..\">$PROJECT</a></h1>" \
           "<h2>Branch: $branch</h2>" \
           "<ul>" \
           > "$BRANCH_INDEX"
 
-      echo "<li><a href=\"branches/$branch\">$branch</a> " \
+      echo "<li><a href=\"branches/$branch.html\">$branch</a> " \
         "$log $committer $date" >> "$INDEX"
     fi
 
@@ -161,24 +165,38 @@ do
 
 
     COMMIT_INDEX="$COMMIT_BASE/index.html"
-    echo "<html><head><title>Commit: $commit</title></head>" \
+    {
+      echo "<html><head><title>$PROJECT: Commit: $commit</title></head>" \
         "<body>" \
-	"<h2>Branch: $branch</h2>" \
+	"<h1><a href=\"../..\">$PROJECT</a></h1>" \
+	"<h2>Branch: <a href=\"../../branches/$branch.html\">$branch</a></h2>" \
         "<h3>Commit: $commit</h3>" \
 	"<p>Committer: $committer" \
 	"<br>Date: $date" \
-	"<br>Parent: <a href=\"../$parent\">$parent</a>" \
-	" (<a href=\"diff-to-parent.html\">diff to parent</a>)" \
+	"<br>Parent: <a href=\"../../commits/$parent\">$parent</a>" \
+	" (<a href=\"../../commits/$commit/diff-to-parent.html\">diff to parent</a>)" \
 	"<br>Log message:" \
 	"<p><pre>$loglong</pre>" \
+	"<br>Diff Stat:" \
+	"<blockquote><pre>"
+      git diff --stat $commit..$parent \
+        | gawk '{ if (last_line) print last_line;
+                  last_line_raw=$0;
+                  $1=sprintf("<a href=\""$1".raw.html\">"$1"</a>%*s" \
+                             "(<a href=\"diff-to-parent.html#%s\">diff</a>)",
+                             60 - length ($1), " ", $1);
+                  last_line=$0; }
+                END { print last_line_raw; }'
+      echo "</pre></blockquote>" \
 	"<p>" \
-        "<ul>" \
-        > "$COMMIT_INDEX"
+        "<ul>"
+    } > "$COMMIT_INDEX"
 
     {
-      echo "<html><head><title>diff $commit $parent</title></head>" \
+      echo "<html><head><title>$PROJECT: diff $commit $parent</title></head>" \
         "<body>" \
-	"<h2>Branch: $branch</h2>" \
+	"<h1><a href=\"../..\">$PROJECT</a></h1>" \
+	"<h2>Branch: <a href=\"../../branches/$branch.html\">$branch</a></h2>" \
         "<h3>Commit: <a href=\"index.html\">$commit</a></h3>" \
 	"<p>Committer: $committer" \
 	"<br>Date: $date" \
@@ -189,7 +207,12 @@ do
         "<pre>"
       git diff $commit..$parent \
         | sed 's#<#\&lt;#g; s#>#\&gt;#g; ' \
-	| awk '{ ++line; printf("%5d: %s\n", line, $0); }'
+	| gawk '/^diff --git/ {
+                  file=$3;
+                  sub (/^a\//, "", file);
+                  $3=sprintf("<a name=\"%s\">%s</a>", file, $3);
+                }
+                { ++line; printf("%5d: %s\n", line, $0); }'
       echo "</pre></body></html>"
     } > "$COMMIT_BASE/diff-to-parent.html"
 
