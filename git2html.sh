@@ -19,12 +19,15 @@
 set -e
 # set -x
 
+PROJECT="Woodchuck"
 # Directory containing the repository.
 REPOSITORY=/home/neal/public_html/woodchuck.git
+
+PUBLIC_REPOSITORY="http://hssl.cs.jhu.edu/~neal/woodchuck.git"
 # Where to create the html pages.
 TARGET=/home/neal/public_html/woodchuck/src
 # List of branches for which html pages should be created.
-BRANCHES=master
+BRANCHES="master release-0.1"
 
 if test ! -d "$REPOSITORY"
 then
@@ -85,6 +88,20 @@ do
   let ++bcount
 done
 
+INDEX="$TARGET/index.html"
+
+echo "<html><head><title>$PROJECT</title></head>" \
+  "<body>" \
+  "<h2>$PROJECT</h2>" \
+  "<h3>Repository</h3>" \
+  "Clone this repository using:" \
+  "<pre>" \
+  " git clone $PUBLIC_REPOSITORY" \
+  "</pre>" \
+  "<h3>Branches</h3>" \
+  "<ul>" \
+  > "$INDEX"
+
 b=0
 for branch in $BRANCHES
 do
@@ -114,6 +131,16 @@ do
 
     echo "Commit $commit ($c/$ccount): processing."
 
+    metadata=$(git log -n 1 --pretty=raw $commit)
+    parent=$(echo "$metadata" \
+	| awk '/^parent / { $1=""; sub (" ", ""); print $0 }')
+    committer=$(echo "$metadata" \
+	| awk '/^committer / { NF=NF-2; $1=""; sub(" ", ""); print $0 }')
+    date=$(echo "$metadata" | awk '/^committer / { print $(NF=NF-1); }')
+    date=$(date -u -d "1970-01-01 $date sec")
+    log=$(echo "$metadata" | awk '/^    / { print $0; exit }')
+    loglong=$(echo "$metadata" | awk '/^    / { print $0; }')
+
     if test "$c" = "1"
     then
       # This commit is the current head of the branch.
@@ -124,17 +151,11 @@ do
           "<h2>Branch: $branch</h2>" \
           "<ul>" \
           > "$BRANCH_INDEX"
+
+      echo "<li><a href=\"branches/$branch\">$branch</a> " \
+        "$log $committer $date" >> "$INDEX"
     fi
 
-    metadata=$(git log -n 1 --pretty=raw $commit)
-    parent=$(echo "$metadata" \
-	| awk '/^parent / { $1=""; sub (" ", ""); print $0 }')
-    committer=$(echo "$metadata" \
-	| awk '/^committer / { NF=NF-2; $1=""; sub(" ", ""); print $0 }')
-    date=$(echo "$metadata" | awk '/^committer / { print $(NF=NF-1); }')
-    date=$(date -u -d "1970-01-01 $date sec")
-    log=$(echo "$metadata" | awk '/^    / { print $0; exit }')
-    loglong=$(echo "$metadata" | awk '/^    / { print $0; }')
     echo "<li><a href=\"../commits/$commit\">$log</a>: $committer $date" \
 	>> "$BRANCH_INDEX"
 
@@ -260,3 +281,5 @@ do
 
   echo "</ul></body></html>" >> "$BRANCH_INDEX"
 done
+
+echo "</ul></body></html>" >> "$INDEX"
