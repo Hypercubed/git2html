@@ -278,9 +278,6 @@ do
 	  | sed 's#^\([a-f0-9]\{2\}\).*#\1#')
       object="$object_dir/$sha"
 
-      echo "<li><a href=\"$file_base\">$file_base</a>" \
-	>> "$COMMIT_INDEX"
-
       if test ! -e "$object"
       then
         # File does not yet exists in the object repository.
