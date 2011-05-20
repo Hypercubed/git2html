@@ -136,13 +136,13 @@ do
     metadata=$(git log -n 1 --pretty=raw $commit \
         | sed 's#<#\&lt;#g; s#>#\&gt;#g; ')
     parent=$(echo "$metadata" \
-	| awk '/^parent / { $1=""; sub (" ", ""); print $0 }')
+	| gawk '/^parent / { $1=""; sub (" ", ""); print $0 }')
     committer=$(echo "$metadata" \
-	| awk '/^committer / { NF=NF-2; $1=""; sub(" ", ""); print $0 }')
-    date=$(echo "$metadata" | awk '/^committer / { print $(NF=NF-1); }')
+	| gawk '/^committer / { NF=NF-2; $1=""; sub(" ", ""); print $0 }')
+    date=$(echo "$metadata" | gawk '/^committer / { print $(NF=NF-1); }')
     date=$(date -u -d "1970-01-01 $date sec")
-    log=$(echo "$metadata" | awk '/^    / { print $0; exit }')
-    loglong=$(echo "$metadata" | awk '/^    / { print $0; }')
+    log=$(echo "$metadata" | gawk '/^    / { print $0; exit }')
+    loglong=$(echo "$metadata" | gawk '/^    / { print $0; }')
 
     if test "$c" = "1"
     then
@@ -270,9 +270,9 @@ do
 
     while read line
     do
-      file_base=$(echo "$line" | awk '{ print $4 }')
+      file_base=$(echo "$line" | gawk '{ print $4 }')
       file="$TARGET/commits/$commit/$file_base"
-      sha=$(echo "$line" | awk '{ print $3 }')
+      sha=$(echo "$line" | gawk '{ print $3 }')
 
       object_dir="$TARGET/objects/"$(echo "$sha" \
 	  | sed 's#^\([a-f0-9]\{2\}\).*#\1#')
