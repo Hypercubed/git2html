@@ -19,19 +19,90 @@
 set -e
 # set -x
 
-PROJECT="Woodchuck"
-# Directory containing the repository.
-REPOSITORY=/home/neal/public_html/woodchuck.git
+# PROJECT="Woodchuck"
+# REPOSITORY=/home/neal/public_html/woodchuck.git
+# PUBLIC_REPOSITORY="http://hssl.cs.jhu.edu/~neal/woodchuck.git"
+# TARGET=/home/neal/public_html/woodchuck/src
+# BRANCHES="master release-0.1"
 
-PUBLIC_REPOSITORY="http://hssl.cs.jhu.edu/~neal/woodchuck.git"
+usage()
+{
+  echo "Usage $0 [-prlb] TARGET"
+  echo "Generate static HTML pages in TARGET for the specified git repository."
+  echo
+  echo "  -p  Project's name"
+  echo "  -r  Repository to clone from."
+  echo "  -l  Public repository link, e.g., 'http://host.org/project.git'"
+  echo "  -b  List of branches to process (default: all)."
+  exit $1
+}
+
+while getopts ":p:r:l:b:" opt
+do
+  case $opt in
+    p)
+      PROJECT=$OPTARG
+      ;;
+    r)
+      # Directory containing the repository.
+      REPOSITORY=$OPTARG
+      ;;
+    l)
+      PUBLIC_REPOSITORY=$OPTARG
+      ;;
+    b)
+      BRANCHES=$OPTARG
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      usage
+      ;;
+  esac
+done
+shift $(($OPTIND - 1))
+
+if test $# -ne 1
+then
+  usage 1
+fi
+
 # Where to create the html pages.
-TARGET=/home/neal/public_html/woodchuck/src
-# List of branches for which html pages should be created.
-BRANCHES="master release-0.1"
+TARGET="$1"
+
+# Make sure the target exists.
+mkdir -p "$TARGET"
+
+CONFIG_FILE=".ht_git2html"
+
+# Read the configuration file.
+if test -e "$TARGET/$CONFIG_FILE"
+then
+  . "$TARGET/$CONFIG_FILE"
+fi
+
+if test x"$REPOSITORY" = x
+then
+  echo "-r required."
+  usage 1
+fi
+
+{
+  save()
+  {
+    # Prefer environment variables and arguments to the configuration file.
+    V=$(eval echo \$$1)
+    echo "$1=\${$1:-\"$V\"}"
+  }
+  save "PROJECT"
+  save "REPOSITORY"
+  save "PUBLIC_REPOSITORY"
+  save "TARGET"
+  save "BRANCHES"
+} > "$TARGET/$CONFIG_FILE"
 
 if test ! -d "$REPOSITORY"
 then
-  echo "Repository $REPOSITORY does not exists.  Misconfiguration likely."
+  echo "Repository \"$REPOSITORY\" does not exists.  Misconfiguration likely."
   exit 1
 fi
 
@@ -59,7 +130,6 @@ html_footer()
 }
 
 # Ensure that some directories we need exist.
-mkdir -p "$TARGET"
 if test ! -d "$TARGET/objects"
 then
   mkdir "$TARGET/objects"
@@ -86,6 +156,11 @@ else
   git pull
 fi
 
+if test x"$BRANCHES" = x
+then
+  BRANCHES=$(git branch --no-color -l | sed 's/^..//')
+fi
+
 # For each branch and each commit create and extract an archive of the form
 #   $TARGET/commits/$commit
 #
@@ -104,12 +179,17 @@ INDEX="$TARGET/index.html"
 
 {
   html_header
-  echo "<h2>Repository</h2>" \
-    "Clone this repository using:" \
-    "<pre>" \
-    " git clone $PUBLIC_REPOSITORY" \
-    "</pre>" \
-    "<h3>Branches</h3>" \
+  echo "<h2>Repository</h2>"
+
+  if test x"$PUBLIC_REPOSITORY" != x
+  then
+    echo  "Clone this repository using:" \
+      "<pre>" \
+      " git clone $PUBLIC_REPOSITORY" \
+      "</pre>"
+  fi
+
+  echo "<h3>Branches</h3>" \
     "<ul>"
 } > "$INDEX"
 
