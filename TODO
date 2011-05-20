@@ -1,0 +1,20 @@
+-*- mode:org -*-
+
+* HTML output
+** Make the HTML template customizable without changing the source.
+** Make the HTML output prettier.
+*** Add some CSS
+*** Make the source directories collapsable.
+
+* Building
+** Detech required tools (e.g., gawk).
+** Provide proper build infrastructure so that installing is possible.
+
+* Objects
+** Link to all commits.
+
+* Commits
+
+* Branches
+** Show tags
+** Show commit's relationships a la git rev-list --graph branch
