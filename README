@@ -1,0 +1,56 @@
+DESCRIPTION
+-----------
+
+git2html is a simple git web interface. Unlike other web interfaces,
+git2html does not generate content dynamically: instead of using a CGI
+script, it generates static HTML pages.
+
+Generating static HTML pages has advantages and disadvantages.  The
+main advantages are that it is more secure and more robust.  It is
+more robust in the sense that web server configuration changes are
+unlikely to cause the interface to stop working.  Its primary
+disadvantage is that because the pages are generated statically, not
+all queries can be supported, e.g., diffs between arbitrary revisions.
+Despite this seemingly dehabilitating disadvantage, the output is
+surprisingly useful.
+
+USAGE
+-----
+
+The first time you run git2html, you need to indicate your's projects
+name (-p), the link for viewers to clone the repository (-l), the
+repository to get updates from (-r) and the target directory.
+
+Here is how I configured git2html's viewer directory:
+
+ $ ./git2html.sh \
+     -p git2html \
+     -l http://hssl.cs.jhu.edu/~neal/git2html.git \
+     -r /home/neal/public_html/git2html.git 
+     ~/public_html/git2html/src/
+
+Note that this first run will take a fair amount of time.  git2html
+tries to be smart and avoids doing a fair amount of redundant work on
+subsequent runs.
+
+Subsequent runs only require the target directory (git2html saves the
+configuration in the target directory in the .ht_git2html file).
+
+After commiting to git2html's repository, the following command is
+run:
+
+ $ ./git2html.sh ~/public_html/git2html/src/
+
+HOMEPAGE
+--------
+
+http://hssl.cs.jhu.edu/~neal/git2html/
+
+SOURCE
+------
+
+To get the source:
+
+  git clone http://hssl.cs.jhu.edu/~neal/git2html.git
+
+
