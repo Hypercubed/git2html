@@ -105,6 +105,15 @@ then
   usage 1
 fi
 
+# The output version
+CURRENT_TEMPLATE="$(sha1sum "$0")"
+if test "x$CURRENT_TEMPLATE" != "x$TEMPLATE"
+then
+  progress "Rebuilding all pages as output template changed."
+  force_rebuild=1
+fi
+TEMPLATE="$CURRENT_TEMPLATE"
+
 {
   save()
   {
@@ -116,6 +125,7 @@ fi
   save "PUBLIC_REPOSITORY" "$PUBLIC_REPOSITORY"
   save "TARGET" "$TARGET"
   save "BRANCHES" "$BRANCHES"
+  save "TEMPLATE" "$TEMPLATE"
 } > "$TARGET/$CONFIG_FILE"
 
 if test ! -d "$REPOSITORY"
