@@ -109,14 +109,13 @@ fi
   save()
   {
     # Prefer environment variables and arguments to the configuration file.
-    V=$(eval echo \$$1)
-    echo "$1=\${$1:-\"$V\"}"
+    echo "$1=\"\${$1:-\"$2\"}\""
   }
-  save "PROJECT"
-  save "REPOSITORY"
-  save "PUBLIC_REPOSITORY"
-  save "TARGET"
-  save "BRANCHES"
+  save "PROJECT" "$PROJECT"
+  save "REPOSITORY" "$REPOSITORY"
+  save "PUBLIC_REPOSITORY" "$PUBLIC_REPOSITORY"
+  save "TARGET" "$TARGET"
+  save "BRANCHES" "$BRANCHES"
 } > "$TARGET/$CONFIG_FILE"
 
 if test ! -d "$REPOSITORY"
