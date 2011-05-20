@@ -35,10 +35,12 @@ usage()
   echo "  -l  Public repository link, e.g., 'http://host.org/project.git'"
   echo "  -b  List of branches to process (default: all)."
   echo "  -q  Be quiet."
+  echo "  -f  Force rebuilding of all pages."
   exit $1
 }
 
 show_progress=1
+force_rebuild=0
 
 progress()
 {
@@ -48,7 +50,7 @@ progress()
   fi
 }
 
-while getopts ":p:r:l:b:q" opt
+while getopts ":p:r:l:b:qf" opt
 do
   case $opt in
     p)
@@ -66,6 +68,9 @@ do
       ;;
     q)
       show_progress=0
+      ;;
+    f)
+      force_rebuild=1
       ;;
     \?)
       echo "Invalid option: -$OPTARG" >&2
@@ -144,6 +149,11 @@ html_footer()
 }
 
 # Ensure that some directories we need exist.
+if test x"$force_rebuild" = x1
+then
+  rm -rf "$TARGET/objects" "$TARGET/commits"
+fi
+
 if test ! -d "$TARGET/objects"
 then
   mkdir "$TARGET/objects"
