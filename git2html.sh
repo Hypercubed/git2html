@@ -72,9 +72,16 @@ then
   mkdir "$TARGET/branches"
 fi
 
-
-# Clone the repository
-git clone $REPOSITORY "$TARGET/repository"
+# Get an up-to-date copy of the repository.
+if test ! -e "$TARGET/repository"
+then
+  # Clone the repository.
+  git clone $REPOSITORY "$TARGET/repository"
+else
+  # Update the repository.
+  cd "$TARGET/repository"
+  git pull
+fi
 
 # For each branch and each commit create and extract an archive of the form
 #   $TARGET/commits/$commit
@@ -122,15 +129,6 @@ do
   git rev-list --topo-order $branch | while read commit
   do
     let ++c
-    COMMIT_BASE="$TARGET/commits/$commit"
-    if test -e "$COMMIT_BASE"
-    then
-      echo "Commit $commit ($c/$ccount): already processed."
-      continue
-    fi
-
-    mkdir "$COMMIT_BASE"
-
     echo "Commit $commit ($c/$ccount): processing."
 
     metadata=$(git log -n 1 --pretty=raw $commit \
@@ -164,6 +162,19 @@ do
 	>> "$BRANCH_INDEX"
 
 
+    # Commits don't change.  If the directory already exists, it is up
+    # to date and we can save some work.
+    COMMIT_BASE="$TARGET/commits/$commit"
+    if test -e "$COMMIT_BASE"
+    then
+      echo "Commit $commit ($c/$ccount): already processed."
+      continue
+    fi
+
+    mkdir "$COMMIT_BASE"
+
+    # Create the commit's index.html: the metadata, a summary of the changes
+    # and a list of all the files.
     COMMIT_INDEX="$COMMIT_BASE/index.html"
     {
       echo "<html><head><title>$PROJECT: Commit: $commit</title></head>" \
