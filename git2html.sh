@@ -177,6 +177,7 @@ if test ! -e "$TARGET/repository"
 then
   # Clone the repository.
   git clone $REPOSITORY "$TARGET/repository"
+  cd "$TARGET/repository"
 else
   # Update the repository.
   cd "$TARGET/repository"
@@ -227,7 +228,7 @@ for branch in $BRANCHES
 do
   let ++b
 
-  cd "$REPOSITORY"
+  cd "$TARGET/repository"
 
   # Count the number of commits on this branch to improve reporting.
   ccount=$(git rev-list $branch | wc -l)
