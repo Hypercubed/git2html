@@ -17,7 +17,7 @@ surprisingly useful.
 USAGE
 -----
 
-The first time you run git2html, you need to indicate your's projects
+The first time you run git2html, you need to indicate your project's
 name (-p), the link for viewers to clone the repository (-l), the
 repository to get updates from (-r) and the target directory.
 
@@ -53,4 +53,7 @@ To get the source:
 
   git clone http://hssl.cs.jhu.edu/~neal/git2html.git
 
+BUG REPORTS
+-----------
 
+Send bug reports to Neal H. Walfield <neal@walfield.org>.
