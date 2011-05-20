@@ -27,17 +27,28 @@ set -e
 
 usage()
 {
-  echo "Usage $0 [-prlb] TARGET"
+  echo "Usage $0 [-prlbq] TARGET"
   echo "Generate static HTML pages in TARGET for the specified git repository."
   echo
   echo "  -p  Project's name"
   echo "  -r  Repository to clone from."
   echo "  -l  Public repository link, e.g., 'http://host.org/project.git'"
   echo "  -b  List of branches to process (default: all)."
+  echo "  -q  Be quiet."
   exit $1
 }
 
-while getopts ":p:r:l:b:" opt
+show_progress=1
+
+progress()
+{
+  if test x"$show_progress" = x1
+  then
+    echo "$@"
+  fi
+}
+
+while getopts ":p:r:l:b:q" opt
 do
   case $opt in
     p)
@@ -52,6 +63,9 @@ do
       ;;
     b)
       BRANCHES=$OPTARG
+      ;;
+    q)
+      show_progress=0
       ;;
     \?)
       echo "Invalid option: -$OPTARG" >&2
@@ -153,7 +167,9 @@ then
 else
   # Update the repository.
   cd "$TARGET/repository"
-  git pull
+  # Don't use grep -v as that returns 1 if there is no output.
+  git pull | gawk '/^Already up-to-date[.]$/ { skip=1; }
+                   { if (! skip) print; skip=0 }'
 fi
 
 if test x"$BRANCHES" = x
@@ -203,7 +219,7 @@ do
   # Count the number of commits on this branch to improve reporting.
   ccount=$(git rev-list $branch | wc -l)
 
-  echo "Branch $branch ($b/$bcount): processing ($ccount commits)."
+  progress "Branch $branch ($b/$bcount): processing ($ccount commits)."
 
   BRANCH_INDEX="$TARGET/branches/$branch.html"
 
@@ -211,7 +227,7 @@ do
   git rev-list --topo-order $branch | while read commit
   do
     let ++c
-    echo "Commit $commit ($c/$ccount): processing."
+    progress "Commit $commit ($c/$ccount): processing."
 
     # Extract metadata about this commit.
     metadata=$(git log -n 1 --pretty=raw $commit \
@@ -252,7 +268,7 @@ do
     COMMIT_BASE="$TARGET/commits/$commit"
     if test -e "$COMMIT_BASE"
     then
-      echo "Commit $commit ($c/$ccount): already processed."
+      progress "Commit $commit ($c/$ccount): already processed."
       continue
     fi
 
