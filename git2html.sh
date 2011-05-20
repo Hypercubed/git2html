@@ -172,11 +172,13 @@ then
   mkdir "$TARGET/branches"
 fi
 
+unset GIT_DIR
+
 # Get an up-to-date copy of the repository.
 if test ! -e "$TARGET/repository"
 then
   # Clone the repository.
-  git clone $REPOSITORY "$TARGET/repository"
+  git clone "$REPOSITORY" "$TARGET/repository"
   cd "$TARGET/repository"
 else
   # Update the repository.
