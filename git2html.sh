@@ -19,12 +19,6 @@
 set -e
 # set -x
 
-# PROJECT="Woodchuck"
-# REPOSITORY=/home/neal/public_html/woodchuck.git
-# PUBLIC_REPOSITORY="http://hssl.cs.jhu.edu/~neal/woodchuck.git"
-# TARGET=/home/neal/public_html/woodchuck/src
-# BRANCHES="master release-0.1"
-
 usage()
 {
   echo "Usage $0 [-prlbq] TARGET"
