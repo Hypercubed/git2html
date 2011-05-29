@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 set -e
+set -o pipefail
 # set -x
 
 usage()
@@ -254,7 +255,7 @@ do
 	| gawk '/^committer / { NF=NF-2; $1=""; sub(" ", ""); print $0 }')
     date=$(echo "$metadata" | gawk '/^committer / { print $(NF=NF-1); }')
     date=$(date -u -d "1970-01-01 $date sec")
-    log=$(echo "$metadata" | gawk '/^    / { print $0; exit }')
+    log=$(echo "$metadata" | gawk '/^    / { if (!done) print $0; done=1; }')
     loglong=$(echo "$metadata" | gawk '/^    / { print $0; }')
 
     if test "$c" = "1"
