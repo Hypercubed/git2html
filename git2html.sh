@@ -189,6 +189,7 @@ do
   git fetch "$REPOSITORY" ${branch} \
       | gawk '/^Already up-to-date[.]$/ { skip=1; }
               { if (! skip) print; skip=0 }'
+  git merge FETCH_HEAD
 done
 
 if test x"$BRANCHES" = x
@@ -236,14 +237,14 @@ do
   cd "$TARGET/repository"
 
   # Count the number of commits on this branch to improve reporting.
-  ccount=$(git rev-list origin/$branch | wc -l)
+  ccount=$(git rev-list $branch | wc -l)
 
   progress "Branch $branch ($b/$bcount): processing ($ccount commits)."
 
   BRANCH_INDEX="$TARGET/branches/$branch.html"
 
   c=0
-  git rev-list --topo-order origin/$branch | while read commit
+  git rev-list --topo-order $branch | while read commit
   do
     let ++c
     progress "Commit $commit ($c/$ccount): processing."
