@@ -257,16 +257,34 @@ do
 
   cd "$TARGET/repository"
 
+  COMMITS=$(mktemp)
+  git rev-list --graph $branch > $COMMITS
+
   # Count the number of commits on this branch to improve reporting.
-  ccount=$(git rev-list $branch | wc -l)
+  ccount=$(egrep '[0-9a-f]' < $COMMITS | wc -l)
 
   progress "Branch $branch ($b/$bcount): processing ($ccount commits)."
 
   BRANCH_INDEX="$TARGET/branches/$branch.html"
 
   c=0
-  git rev-list --topo-order $branch | while read commit
+  while read -r commitline
   do
+    # See http://www.itnewb.com/unicode
+    graph=$(echo "$commitline" \
+            | sed 's/ [0-9a-f]*$//; s/|/\&#x2503;/g; s/[*]/\&#x25CF;/g;
+                   s/[\]/\&#x2B0A;/g; s/\//\&#x2B0B;/g;')
+    commit=$(echo "$commitline" | sed 's/^[^0-9a-f]*//')
+
+    if test x"$commit" = x
+    then
+      # This is just a bit of graph.  Add it to the branch's
+      # index.html and then go to the next commit.
+      echo "<tr><td valign=\"middle\"><pre>$graph</pre></td><td></td><td></td><td></td></tr>" \
+	>> "$BRANCH_INDEX"
+      continue
+    fi
+
     let ++c
     progress "Commit $commit ($c/$ccount): processing."
 
@@ -295,12 +313,12 @@ do
 
       {
         html_header "Branch: $branch" ".."
-        echo "<ul>"
+        echo "<table>"
       } > "$BRANCH_INDEX"
     fi
 
     # Add this commit to the branch's index.html.
-    echo "<li><a href=\"../commits/$commit\">$log</a>: $committer $date" \
+    echo "<tr><td valign=\"middle\"><pre>$graph</pre></td><td><a href=\"../commits/$commit\">$log</a></td><td>$committer</td><td>$date</td></tr>" \
 	>> "$BRANCH_INDEX"
 
 
@@ -425,7 +443,7 @@ do
 
 
     # For each file in the commit, ensure the object exists.
-    while read line
+    while read -r line
     do
       file_base=$(echo "$line" | gawk '{ print $4 }')
       file="$TARGET/commits/$commit/$file_base"
@@ -462,11 +480,12 @@ do
       mkdir -p $(dirname "$file")
       ln "$object" "$file.raw.html"
     done <"$FILES"
-    rm "$FILES"
-  done
+    rm -f "$FILES"
+  done <$COMMITS
+  rm -f $COMMITS
 
   {
-    echo "</ul>"
+    echo "</table>"
     html_footer
   } >> "$BRANCH_INDEX"
 done
