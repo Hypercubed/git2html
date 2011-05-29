@@ -180,14 +180,16 @@ if test ! -e "$TARGET/repository"
 then
   # Clone the repository.
   git clone "$REPOSITORY" "$TARGET/repository"
-  cd "$TARGET/repository"
-else
-  # Update the repository.
-  cd "$TARGET/repository"
-  # Don't use grep -v as that returns 1 if there is no output.
-  git pull | gawk '/^Already up-to-date[.]$/ { skip=1; }
-                   { if (! skip) print; skip=0 }'
 fi
+
+cd "$TARGET/repository"
+for branch in ${BRANCHES:-$(git branch --no-color -r | sed 's#^ *origin/##')}
+do
+  # Don't use grep -v as that returns 1 if there is no output.
+  git fetch "$REPOSITORY" ${branch} \
+      | gawk '/^Already up-to-date[.]$/ { skip=1; }
+              { if (! skip) print; skip=0 }'
+done
 
 if test x"$BRANCHES" = x
 then
@@ -234,14 +236,14 @@ do
   cd "$TARGET/repository"
 
   # Count the number of commits on this branch to improve reporting.
-  ccount=$(git rev-list $branch | wc -l)
+  ccount=$(git rev-list origin/$branch | wc -l)
 
   progress "Branch $branch ($b/$bcount): processing ($ccount commits)."
 
   BRANCH_INDEX="$TARGET/branches/$branch.html"
 
   c=0
-  git rev-list --topo-order $branch | while read commit
+  git rev-list --topo-order origin/$branch | while read commit
   do
     let ++c
     progress "Commit $commit ($c/$ccount): processing."
