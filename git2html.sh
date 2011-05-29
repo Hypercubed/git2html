@@ -346,24 +346,34 @@ do
       # The metadata.
       echo "<h2>Branch: <a href=\"../../branches/$branch.html\">$branch</a></h2>" \
 	"<p>Committer: $committer" \
-	"<br>Date: $date" \
-	"<br>Parent: <a href=\"../../commits/$parent\">$parent</a>" \
-	" (<a href=\"../../commits/$commit/diff-to-parent.html\">diff to parent</a>)" \
-	"<br>Log message:" \
-	"<p><pre>$loglong</pre>" \
-	"<br>Diff Stat:" \
-	"<blockquote><pre>"
-      git diff --stat $commit..$parent \
-        | gawk '{ if (last_line) print last_line;
-                  last_line_raw=$0;
-                  $1=sprintf("<a href=\""$1".raw.html\">"$1"</a>%*s" \
-                             "(<a href=\"diff-to-parent.html#%s\">diff</a>)",
-                             60 - length ($1), " ", $1);
-                  last_line=$0; }
-                END { print last_line_raw; }'
-      echo "</pre></blockquote>" \
-	"<p>Files:" \
+	"<br>Date: $date"
+      for p in $parent
+      do
+        echo "<br>Parent: <a href=\"../../commits/$p\">$p</a>" \
+	" (<a href=\"../../commits/$commit/diff-to-$p.html\">diff to parent</a>)"
+      done
+      echo "<br>Log message:" \
+	"<p><pre>$loglong</pre>"
+      for p in $parent
+      do
+	echo "<br>Diff Stat to $p:" \
+	  "<blockquote><pre>"
+        git diff --stat $p..$commit \
+          | gawk \
+              '{ if (last_line) print last_line;
+                 last_line_raw=$0;
+                 $1=sprintf("<a href=\"%s.raw.html\">%s</a>" \
+                            "(<a href=\"../../commits/'"$p"'/%s.raw.html\">old</a>)" \
+                            "%*s" \
+                            "(<a href=\"diff-to-'"$p"'.html#%s\">diff</a>)",
+                            $1, $1, $1, 60 - length ($1), " ", $1);
+                    last_line=$0; }
+                  END { print last_line_raw; }'
+        echo "</pre></blockquote>"
+      done
+      echo "<p>Files:" \
         "<ul>"
+
       # The list of files as a hierarchy.
       gawk 'function spaces(l) {
              for (space = 1; space <= l; space ++) { printf ("  "); }
@@ -418,28 +428,31 @@ do
     } > "$COMMIT_INDEX"
 
     # Create the commit's diff-to-parent.html file.
-    {
-      html_header "diff $(echo $commit | sed 's/^\(.\{8\}\).*/\1/') $(echo $parent | sed 's/^\(.\{8\}\).*/\1/')" "../.."
-      echo "<h2>Branch: <a href=\"../../branches/$branch.html\">$branch</a></h2>" \
-        "<h3>Commit: <a href=\"index.html\">$commit</a></h3>" \
-	"<p>Committer: $committer" \
-	"<br>Date: $date" \
-	"<br>Parent: <a href=\"../$parent\">$parent</a>" \
-	"<br>Log message:" \
-	"<p><pre>$loglong</pre>" \
-	"<p>" \
-        "<pre>"
-      git diff $commit..$parent \
-        | sed 's#<#\&lt;#g; s#>#\&gt;#g; ' \
-	| gawk '/^diff --git/ {
-                  file=$3;
-                  sub (/^a\//, "", file);
-                  $3=sprintf("<a name=\"%s\">%s</a>", file, $3);
-                }
-                { ++line; printf("%5d: %s\n", line, $0); }'
-      echo "</pre>"
-      html_footer
-    } > "$COMMIT_BASE/diff-to-parent.html"
+    for p in $parent
+    do
+      {
+        html_header "diff $(echo $commit | sed 's/^\(.\{8\}\).*/\1/') $(echo $p | sed 's/^\(.\{8\}\).*/\1/')" "../.."
+        echo "<h2>Branch: <a href=\"../../branches/$branch.html\">$branch</a></h2>" \
+          "<h3>Commit: <a href=\"index.html\">$commit</a></h3>" \
+  	"<p>Committer: $committer" \
+  	"<br>Date: $date" \
+  	"<br>Parent: <a href=\"../$p\">$p</a>" \
+  	"<br>Log message:" \
+  	"<p><pre>$loglong</pre>" \
+  	"<p>" \
+          "<pre>"
+        git diff $p..$commit \
+          | sed 's#<#\&lt;#g; s#>#\&gt;#g; ' \
+  	| gawk '/^diff --git/ {
+                    file=$3;
+                    sub (/^a\//, "", file);
+                    $3=sprintf("<a name=\"%s\">%s</a>", file, $3);
+                  }
+                  { ++line; printf("%5d: %s\n", line, $0); }'
+        echo "</pre>"
+        html_footer
+      } > "$COMMIT_BASE/diff-to-$p.html"
+    done
 
 
     # For each file in the commit, ensure the object exists.
