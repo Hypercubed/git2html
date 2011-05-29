@@ -470,7 +470,7 @@ do
           echo "<pre>"
           git show "$sha" \
             | sed 's#<#\&lt;#g; s#>#\&gt;#g; ' \
-            | gawk '{ ++line; printf("%5d: %s\n", line, $0); }'
+            | gawk '{ ++line; printf("%6d: %s\n", line, $0); }'
           echo "</pre>"
           html_footer
         } > "$object"
