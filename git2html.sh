@@ -183,14 +183,30 @@ then
 fi
 
 cd "$TARGET/repository"
-for branch in ${BRANCHES:-$(git branch --no-color -r | sed 's#^ *origin/##')}
+
+# We cannot update a branch if we are on it.
+git branch -M git2html-temp-temp-temp-234098
+
+first=1
+for branch in ${BRANCHES:-$(git branch --no-color -r \
+                              | sed 's#^ *origin/##; s/HEAD//')}
 do
   # Don't use grep -v as that returns 1 if there is no output.
   git fetch "$REPOSITORY" ${branch} \
       | gawk '/^Already up-to-date[.]$/ { skip=1; }
               { if (! skip) print; skip=0 }'
-  git merge FETCH_HEAD
+  # Update the branch.
+  git branch -f $branch origin/$branch
+
+  if test x$first = x1
+  then
+    git checkout $branch
+    git branch -D git2html-temp-temp-temp-234098
+    first=0
+  fi
 done
+
+
 
 if test x"$BRANCHES" = x
 then
