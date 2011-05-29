@@ -184,27 +184,32 @@ fi
 
 cd "$TARGET/repository"
 
-# We cannot update a branch if we are on it.
-git branch -M git2html-temp-temp-temp-234098
+# git mrge fails if there are not set.  Fake them.
+git config user.email "git2html@git2html"
+git config user.name "git2html"
 
-first=1
+first=""
 for branch in ${BRANCHES:-$(git branch --no-color -r \
                               | sed 's#^ *origin/##; s/HEAD//')}
 do
+  if test x"$first" = x
+  then
+    first=$branch
+  fi
+
   # Don't use grep -v as that returns 1 if there is no output.
   git fetch "$REPOSITORY" ${branch} \
       | gawk '/^Already up-to-date[.]$/ { skip=1; }
               { if (! skip) print; skip=0 }'
-  # Update the branch.
-  git branch -f $branch origin/$branch
-
-  if test x$first = x1
+  if ! git branch -l | egrep "^[* ] $branch\$" 
   then
-    git checkout $branch
-    git branch -D git2html-temp-temp-temp-234098
-    first=0
+    git checkout origin/$branch
+    git branch $branch
   fi
+  git checkout $branch
+  git merge FETCH_HEAD
 done
+git checkout $first
 
 
 
