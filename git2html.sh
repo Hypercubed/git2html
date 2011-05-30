@@ -381,6 +381,16 @@ do
            }
            function max(a, b) { if (a > b) { return a; } return b; }
            function min(a, b) { if (a < b) { return a; } return b; }
+           function join(array, sep, i, s) {
+             s="";
+             for (i in array) {
+               if (s == "")
+                 s = array[i];
+               else
+                 s = s sep array[i];
+             }
+             return s;
+           }
            BEGIN {
              current_components[1] = "";
              delete current_components[1];
@@ -415,13 +425,15 @@ do
              {
                  current_components[i] = components[i];
                  spaces(i);
-                 printf("<li>%s\n", components[i]);
+                 printf("<li><a name=\"files:%s\">%s</a>\n",
+                        join(current_components, "/"), components[i]);
                  spaces(i);
                  printf("<ul>\n");
              }
   
              spaces(length(current_components))
-             printf ("<li><a href=\"%s.raw.html\">%s</a>\n", $4, file);
+             printf ("<li><a name=\"files:%s\" href=\"%s.raw.html\">%s</a>\n",
+                     $4, $4, file);
            }' < "$FILES"
 
       echo "</ul>"
