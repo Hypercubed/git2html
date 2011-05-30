@@ -454,14 +454,14 @@ do
   	"<p><pre>$loglong</pre>" \
   	"<p>" \
           "<pre>"
-        git diff $p..$commit \
-          | sed 's#<#\&lt;#g; s#>#\&gt;#g; ' \
-  	| gawk '/^diff --git/ {
-                    file=$3;
-                    sub (/^a\//, "", file);
-                    $3=sprintf("<a name=\"%s\">%s</a>", file, $3);
-                  }
-                  { ++line; printf("%5d: %s\n", line, $0); }'
+        git diff -p $p..$commit \
+          | sed 's#<#\&lt;#g; s#>#\&gt;#g;
+                 s#^\(diff --git a/\)\([^ ]\+\)#\1<a name="\2">\2</a>#;
+                 s#^\(\(---\|+++\|index\|diff\|deleted\|new\) .\+\)$#<b>\1</b>#;
+                 s#^\(@@ .\+\)$#<font color=\"blue\">\1</font>#;
+                 s#^\(-.*\)$#<font color=\"red\">\1</font>#;
+                 s#^\(+.*\)$#<font color=\"green\">\1</font>#;' \
+          | gawk '{ ++line; printf("%5d: %s\n", line, $0); }'
         echo "</pre>"
         html_footer
       } > "$COMMIT_BASE/diff-to-$p.html"
