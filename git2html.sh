@@ -313,7 +313,8 @@ do
 
       {
         html_header "Branch: $branch" ".."
-        echo "<table>"
+	echo "<p><a href=\"$branch\">HEAD</a>"
+        echo "<p><table>"
       } > "$BRANCH_INDEX"
     fi
 
