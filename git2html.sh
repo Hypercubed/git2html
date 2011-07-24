@@ -103,6 +103,7 @@ fi
 if test x"$REPOSITORY" = x
 then
   echo "-r required."
+  echo
   usage 1
 fi
 
