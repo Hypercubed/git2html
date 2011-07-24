@@ -381,8 +381,14 @@ do
       echo "<p>Files:" \
         "<ul>"
 
-      # The list of files as a hierarchy.
-      gawk 'function spaces(l) {
+      # The list of files as a hierarchy.  Sort them so that within a
+      # directory, files preceed sub-directories
+      sed 's/\([^ \t]\+[ \t]\)\{3\}//;
+                 s#^#/#; s#/\([^/]*/\)#/1\1#; s#/\([^/]*\)$#/0\1#;' \
+          < "$FILES" \
+	  | sort | sed 's#/[01]#/#g; s#^/##' \
+	  | gawk '
+           function spaces(l) {
              for (space = 1; space <= l; space ++) { printf ("  "); }
            }
            function max(a, b) { if (a > b) { return a; } return b; }
@@ -402,7 +408,7 @@ do
              delete current_components[1];
            }
            {
-             file=$4;
+             file=$0;
              split(file, components, "/")
              # Remove the file.  Keep the directories.
              file=components[length(components)]
@@ -452,7 +458,7 @@ do
                printf ("</ul> <!-- %s -->\n", current_components[j]);
                delete current_components[j];
              }
-           }' < "$FILES"
+           }'
 
       echo "</ul>"
       html_footer
