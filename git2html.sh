@@ -443,6 +443,15 @@ do
              spaces(length(current_components))
              printf ("<li><a name=\"files:%s\" href=\"%s.raw.html\">%s</a>\n",
                      $4, $4, file);
+           }
+
+           END {
+             for (i = length(current_components); j >= 1; j --)
+             {
+               spaces(j);
+               printf ("</ul> <!-- %s -->\n", current_components[j]);
+               delete current_components[j];
+             }
            }' < "$FILES"
 
       echo "</ul>"
