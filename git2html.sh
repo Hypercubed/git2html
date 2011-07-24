@@ -414,19 +414,22 @@ do
                   i ++)
              {
                if (current_components[i] != components[i])
-               # It did.
-               {
-                 last=length(current_components);
-                 for (j = last; j >= i; j --)
-                 {
-                   spaces(j);
-                   printf ("</ul> <!-- %s -->\n", current_components[j]);
-                   delete current_components[j];
-                 }
-               }
+                 # It did.
+                 break
+             }
+
+             # i-1 is the last common component.  The rest from the
+             # current_component stack.
+             last=length(current_components);
+             for (j = last; j >= i; j --)
+             {
+               spaces(j);
+               printf ("</ul> <!-- %s -->\n", current_components[j]);
+               delete current_components[j];
              }
   
-             # See if there are new path components.
+             # If there are new path components push them on the
+             # current_component stack.
              for (; i <= length(components); i ++)
              {
                  current_components[i] = components[i];
