@@ -84,7 +84,7 @@ fi
 TARGET="$1"
 
 # Make sure TARGET is an absolute path.
-if test x"${TARGET%/*}" != x
+if test x"${TARGET%%/*}" != x
 then
     TARGET=$(pwd)/$TARGET
 fi
