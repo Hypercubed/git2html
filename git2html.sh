@@ -198,8 +198,8 @@ git config user.name "git2html"
 first=""
 # Ignore 'origin/HEAD -> origin/master'
 for branch in ${BRANCHES:-$(git branch --no-color -r \
-                              | grep -v ' -> ' \
-                              | sed 's#^ *origin/##;')}
+                              | sed 's#.*->.*##;
+                                     s#^ *origin/##;')}
 do
   echo "Branch: $branch"
   if test x"$first" = x
