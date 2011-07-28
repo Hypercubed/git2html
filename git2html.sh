@@ -199,7 +199,8 @@ first=""
 # Ignore 'origin/HEAD -> origin/master'
 for branch in ${BRANCHES:-$(git branch --no-color -r \
                               | sed 's#.*->.*##;
-                                     s#^ *origin/##;')}
+                                     s#^ *origin/##;
+                                     s#^ *HEAD *$##;')}
 do
   echo "Branch: $branch"
   if test x"$first" = x
