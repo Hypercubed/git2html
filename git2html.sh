@@ -453,7 +453,7 @@ do
   
              spaces(length(current_components))
              printf ("<li><a name=\"files:%s\" href=\"%s.raw.html\">%s</a>\n",
-                     $4, $4, file);
+                     $0, $0, file);
            }
 
            END {
