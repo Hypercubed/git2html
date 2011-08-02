@@ -187,13 +187,38 @@ if test ! -e "$TARGET/repository"
 then
   # Clone the repository.
   git clone "$REPOSITORY" "$TARGET/repository"
-fi
+  cd "$TARGET/repository"
 
-cd "$TARGET/repository"
+  # We don't need any local branches.  In fact, they only make trouble
+  # when there is a non-fast forward merge.  We do want one branch:
+  # the main branch, which we preferred as a detached head.
+  first=""
+  for branch in $(git branch -l | sed 's/^..//')
+  do
+    if test x"$first" = x
+    then
+      # Create the detached head.  This also allows us to delete the
+      # main branch (you can't delete a branch that is checked out).
+      first=$branch
+      git checkout origin/$branch
+    fi
+
+    git branch -D $branch
+  done
+else
+  cd "$TARGET/repository"
+fi
 
 # git mrge fails if there are not set.  Fake them.
 git config user.email "git2html@git2html"
 git config user.name "git2html"
+
+if test x"$BRANCHES" = x
+then
+  # Strip the start of lines of the form 'origin/HEAD -> origin/master'
+  BRANCHES=$(git branch --no-color -r \
+               | sed 's#.*->##; s#^ *origin/##;')
+fi
 
 first=""
 # Ignore 'origin/HEAD -> origin/master'
@@ -202,32 +227,27 @@ for branch in ${BRANCHES:-$(git branch --no-color -r \
                                      s#^ *origin/##;
                                      s#^ *HEAD *$##;')}
 do
-  echo "Branch: $branch"
-  if test x"$first" = x
-  then
-    first=$branch
-  fi
+  first=$branch
+  break
+done
 
-  # Don't use grep -v as that returns 1 if there is no output.
-  git fetch "$REPOSITORY" ${branch} \
+# Due to branch aliases (a la origin/HEAD), a branch might be listed
+# multiple times.  Eliminate this possibility.
+BRANCHES=$(for branch in $BRANCHES
+  do
+    echo $branch
+  done | sort | uniq)
+
+for branch in $BRANCHES
+do
+  # Suppress already up to date status messages, but don't use grep -v
+  # as that returns 1 if there is no output and causes the script to
+  # abort.
+  git fetch --force origin refs/heads/${branch}:refs/origin/${branch} \
       | gawk '/^Already up-to-date[.]$/ { skip=1; }
               { if (! skip) print; skip=0 }'
-  if ! git branch -l | egrep "^[* ] $branch\$" 
-  then
-    git checkout origin/$branch
-    git branch $branch
-  fi
-  git checkout $branch
-  git merge FETCH_HEAD
 done
-git checkout $first
-
-
-
-if test x"$BRANCHES" = x
-then
-  BRANCHES=$(git branch --no-color -l | sed 's/^..//')
-fi
+git checkout "origin/$first"
 
 # For each branch and each commit create and extract an archive of the form
 #   $TARGET/commits/$commit
@@ -269,7 +289,7 @@ do
   cd "$TARGET/repository"
 
   COMMITS=$(mktemp)
-  git rev-list --graph $branch > $COMMITS
+  git rev-list --graph origin/$branch > $COMMITS
 
   # Count the number of commits on this branch to improve reporting.
   ccount=$(egrep '[0-9a-f]' < $COMMITS | wc -l)
