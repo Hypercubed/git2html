@@ -331,12 +331,23 @@ do
     log=$(echo "$metadata" | gawk '/^    / { if (!done) print $0; done=1; }')
     loglong=$(echo "$metadata" | gawk '/^    / { print $0; }')
 
+    echo $c
     if test "$c" = "1"
     then
-      # This commit is the current head of the branch.
-
-      # Update the branch's link.
-      ln -sf "../commits/$commit" "$TARGET/branches/$branch"
+      # This commit is the current head of the branch.  Update the
+      # branch's link, but don't use ln -sf: because the symlink is to
+      # a directory, the symlink won't be replaced; instead, the new
+      # link will be created in the existing symlink's target
+      # directory:
+      #
+      #   $ mkdir foo
+      #   $ ln -s foo bar
+      #   $ ln -s baz bar
+      #   $ ls -ld bar bar/baz 
+      #   lrwxrwxrwx 1 neal neal 3 Aug  3 09:14 bar -> foo
+      #   lrwxrwxrwx 1 neal neal 3 Aug  3 09:14 bar/baz -> baz
+      rm -f "$TARGET/branches/$branch"
+      ln -s "../commits/$commit" "$TARGET/branches/$branch"
 
       # Update the project's index.html and the branch's index.html.
       echo "<li><a href=\"branches/$branch.html\">$branch</a> " \
