@@ -331,7 +331,6 @@ do
     log=$(echo "$metadata" | gawk '/^    / { if (!done) print $0; done=1; }')
     loglong=$(echo "$metadata" | gawk '/^    / { print $0; }')
 
-    echo $c
     if test "$c" = "1"
     then
       # This commit is the current head of the branch.  Update the
