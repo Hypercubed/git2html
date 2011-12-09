@@ -149,7 +149,7 @@ html_header()
 
   echo "<html><head><title>$PROJECT$title</title></head>" \
     "<body>" \
-    "<h1><a href=\"$top_level\">$PROJECT</a>$title</h1>"
+    "<h1><a href=\"$top_level/index.html\">$PROJECT</a>$title</h1>"
 }
 
 html_footer()
@@ -354,13 +354,13 @@ do
 
       {
         html_header "Branch: $branch" ".."
-	echo "<p><a href=\"$branch\">HEAD</a>"
+	echo "<p><a href=\"$branch/index.html\">HEAD</a>"
         echo "<p><table>"
       } > "$BRANCH_INDEX"
     fi
 
     # Add this commit to the branch's index.html.
-    echo "<tr><td valign=\"middle\"><pre>$graph</pre></td><td><a href=\"../commits/$commit\">$log</a></td><td>$committer</td><td>$date</td></tr>" \
+    echo "<tr><td valign=\"middle\"><pre>$graph</pre></td><td><a href=\"../commits/$commit/index.html\">$log</a></td><td>$committer</td><td>$date</td></tr>" \
 	>> "$BRANCH_INDEX"
 
 
@@ -391,7 +391,7 @@ do
 	"<br>Date: $date"
       for p in $parent
       do
-        echo "<br>Parent: <a href=\"../../commits/$p\">$p</a>" \
+        echo "<br>Parent: <a href=\"../../commits/$p/index.html\">$p</a>" \
 	" (<a href=\"../../commits/$commit/diff-to-$p.html\">diff to parent</a>)"
       done
       echo "<br>Log message:" \
@@ -508,7 +508,7 @@ do
           "<h3>Commit: <a href=\"index.html\">$commit</a></h3>" \
   	"<p>Committer: $committer" \
   	"<br>Date: $date" \
-  	"<br>Parent: <a href=\"../$p\">$p</a>" \
+  	"<br>Parent: <a href=\"../$p/index.html\">$p</a>" \
   	"<br>Log message:" \
   	"<p><pre>$loglong</pre>" \
   	"<p>" \
