@@ -324,9 +324,9 @@ do
         | sed 's#<#\&lt;#g; s#>#\&gt;#g; ')
     parent=$(echo "$metadata" \
 	| gawk '/^parent / { $1=""; sub (" ", ""); print $0 }')
-    committer=$(echo "$metadata" \
-	| gawk '/^committer / { NF=NF-2; $1=""; sub(" ", ""); print $0 }')
-    date=$(echo "$metadata" | gawk '/^committer / { print $(NF=NF-1); }')
+    author=$(echo "$metadata" \
+	| gawk '/^author / { NF=NF-2; $1=""; sub(" ", ""); print $0 }')
+    date=$(echo "$metadata" | gawk '/^author / { print $(NF=NF-1); }')
     date=$(date -u -d "1970-01-01 $date sec")
     log=$(echo "$metadata" | gawk '/^    / { if (!done) print $0; done=1; }')
     loglong=$(echo "$metadata" | gawk '/^    / { print $0; }')
@@ -350,7 +350,7 @@ do
 
       # Update the project's index.html and the branch's index.html.
       echo "<li><a href=\"branches/$branch.html\">$branch</a> " \
-        "$log $committer $date" >> "$INDEX"
+        "$log $author $date" >> "$INDEX"
 
       {
         html_header "Branch: $branch" ".."
@@ -360,7 +360,7 @@ do
     fi
 
     # Add this commit to the branch's index.html.
-    echo "<tr><td valign=\"middle\"><pre>$graph</pre></td><td><a href=\"../commits/$commit/index.html\">$log</a></td><td>$committer</td><td>$date</td></tr>" \
+    echo "<tr><td valign=\"middle\"><pre>$graph</pre></td><td><a href=\"../commits/$commit/index.html\">$log</a></td><td>$author</td><td>$date</td></tr>" \
 	>> "$BRANCH_INDEX"
 
 
@@ -387,7 +387,7 @@ do
 
       # The metadata.
       echo "<h2>Branch: <a href=\"../../branches/$branch.html\">$branch</a></h2>" \
-	"<p>Committer: $committer" \
+	"<p>Author: $author" \
 	"<br>Date: $date"
       for p in $parent
       do
@@ -507,7 +507,7 @@ do
         html_header "diff $(echo $commit | sed 's/^\(.\{8\}\).*/\1/') $(echo $p | sed 's/^\(.\{8\}\).*/\1/')" "../.."
         echo "<h2>Branch: <a href=\"../../branches/$branch.html\">$branch</a></h2>" \
           "<h3>Commit: <a href=\"index.html\">$commit</a></h3>" \
-  	"<p>Committer: $committer" \
+  	"<p>Author: $author" \
   	"<br>Date: $date" \
   	"<br>Parent: <a href=\"../$p/index.html\">$p</a>" \
   	"<br>Log message:" \
