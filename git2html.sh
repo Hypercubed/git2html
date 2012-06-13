@@ -412,7 +412,7 @@ do
               '{ if (last_line) print last_line;
                  last_line_raw=$0;
                  $1=sprintf("<a href=\"%s.raw.html\">%s</a>" \
-                            "(<a href=\"../../commits/'"$p"'/%s.raw.html\">old</a>)" \
+                            " (<a href=\"../../commits/'"$p"'/%s.raw.html\">old</a>)" \
                             "%*s" \
                             "(<a href=\"diff-to-'"$p"'.html#%s\">diff</a>)",
                             $1, $1, $1, 60 - length ($1), " ", $1);
