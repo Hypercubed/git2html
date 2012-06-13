@@ -2,6 +2,8 @@
 
 * Only generate output for the last N commits.
 
+* Include diff output in meta-deta instead of linking to specific output file.
+
 * HTML output
 ** Make the HTML template customizable without changing the source.
 ** Make the HTML output prettier.
