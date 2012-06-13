@@ -355,8 +355,8 @@ do
       ln -s "../commits/$commit" "$TARGET/branches/$branch"
 
       # Update the project's index.html and the branch's index.html.
-      echo "<li><a href=\"branches/$branch.html\">$branch</a> " \
-        "$log $author $date" >> "$INDEX"
+      echo "<li><a href=\"branches/$branch.html\">$branch</a>: " \
+        "<b>$log</b> $author <i>$date</i>" >> "$INDEX"
 
       {
         html_header "Branch: $branch" ".."
@@ -366,7 +366,7 @@ do
     fi
 
     # Add this commit to the branch's index.html.
-    echo "<tr><td valign=\"middle\"><pre>$graph</pre></td><td><a href=\"../commits/$commit/index.html\">$log</a></td><td>$author</td><td>$date</td></tr>" \
+    echo "<tr><td valign=\"middle\"><pre>$graph</pre></td><td><a href=\"../commits/$commit/index.html\">$log</a></td><td>$author</td><td><i>$date</i></td></tr>" \
 	>> "$BRANCH_INDEX"
 
 
