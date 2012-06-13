@@ -394,7 +394,8 @@ do
       # The metadata.
       echo "<h2>Branch: <a href=\"../../branches/$branch.html\">$branch</a></h2>" \
 	"<p>Author: $author" \
-	"<br>Date: $date"
+	"<br>Date: $date" \
+        "<br>Commit: $commit"
       for p in $parent
       do
         echo "<br>Parent: <a href=\"../../commits/$p/index.html\">$p</a>" \
