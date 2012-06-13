@@ -267,8 +267,11 @@ INDEX="$TARGET/index.html"
 
 {
   html_header
-  echo "<h2>Repository</h2>"
 
+  echo "<h2>Description</h2>"
+  cat $REPOSITORY/description
+
+  echo "<h2>Repository</h2>"
   if test x"$PUBLIC_REPOSITORY" != x
   then
     echo  "Clone this repository using:" \
