@@ -283,7 +283,7 @@ INDEX="$TARGET/index.html"
       "</pre>"
   fi
 
-  echo "<h3>Branches</h3>" \
+  echo "<h2>Branches</h2>" \
     "<ul>"
 } > "$INDEX"
 
