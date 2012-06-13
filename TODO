@@ -1,5 +1,7 @@
 -*- mode:org -*-
 
+* Only generate output for the last N commits.
+
 * HTML output
 ** Make the HTML template customizable without changing the source.
 ** Make the HTML output prettier.
