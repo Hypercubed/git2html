@@ -193,17 +193,17 @@ then
   # when there is a non-fast forward merge.  We do want one branch:
   # the main branch, which we preferred as a detached head.
   first=""
-  for branch in $(git branch -l | sed 's/^..//')
+  git branch -l | sed 's/^..//' | while read -r branch
   do
     if test x"$first" = x
     then
       # Create the detached head.  This also allows us to delete the
       # main branch (you can't delete a branch that is checked out).
-      first=$branch
-      git checkout origin/$branch
+      first="$branch"
+      git checkout "origin/$branch"
     fi
 
-    git branch -D $branch
+    git branch -D "$branch"
   done
 else
   cd "$TARGET/repository"
@@ -227,7 +227,7 @@ for branch in ${BRANCHES:-$(git branch --no-color -r \
                                      s#^ *origin/##;
                                      s#^ *HEAD *$##;')}
 do
-  first=$branch
+  first="$branch"
   break
 done
 
@@ -235,7 +235,7 @@ done
 # multiple times.  Eliminate this possibility.
 BRANCHES=$(for branch in $BRANCHES
   do
-    echo $branch
+    echo "$branch"
   done | sort | uniq)
 
 for branch in $BRANCHES
@@ -243,7 +243,7 @@ do
   # Suppress already up to date status messages, but don't use grep -v
   # as that returns 1 if there is no output and causes the script to
   # abort.
-  git fetch --force origin refs/heads/${branch}:refs/origin/${branch} \
+  git fetch --force origin "refs/heads/${branch}:refs/origin/${branch}" \
       | gawk '/^Already up-to-date[.]$/ { skip=1; }
               { if (! skip) print; skip=0 }'
 done
@@ -295,7 +295,7 @@ do
   cd "$TARGET/repository"
 
   COMMITS=$(mktemp)
-  git rev-list --graph origin/$branch > $COMMITS
+  git rev-list --graph "origin/$branch" > $COMMITS
 
   # Count the number of commits on this branch to improve reporting.
   ccount=$(egrep '[0-9a-f]' < $COMMITS | wc -l)
