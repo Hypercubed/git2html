@@ -268,8 +268,11 @@ INDEX="$TARGET/index.html"
 {
   html_header
 
-  echo "<h2>Description</h2>"
-  cat $REPOSITORY/description
+  if test -e "$REPOSITORY/description"
+  then
+    echo "<h2>Description</h2>"
+    cat "$REPOSITORY/description"
+  fi
 
   echo "<h2>Repository</h2>"
   if test x"$PUBLIC_REPOSITORY" != x
