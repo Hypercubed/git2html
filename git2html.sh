@@ -484,6 +484,7 @@ do
              spaces(length(current_components))
              printf ("<li><a name=\"files:%s\" href=\"%s.raw.html\">%s</a>\n",
                      $0, $0, file);
+             printf ("  (<a href=\"%s\">raw</a>)\n", $0, file);
            }
 
            END {
@@ -561,9 +562,18 @@ do
         } > "$object"
       fi
 
-      # Create a hard link to the file in the object repository.
+      # Create a hard link to the formatted file in the object repository.
       mkdir -p $(dirname "$file")
       ln "$object" "$file.raw.html"
+
+      # Create a hard link to the raw file.
+      raw_filename="raw/$(echo "$sha" | sed 's/^\(..\)/\1\//')"
+      if ! test -e "$raw_filename"
+      then
+	  mkdir -p "$(dirname "$raw_filename")"
+	  git cat-file blob "$sha" > $raw_filename
+      fi
+      ln "$raw_filename" "$file"
     done <"$FILES"
     rm -f "$FILES"
   done <$COMMITS
